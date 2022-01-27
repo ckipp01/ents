@@ -229,9 +229,10 @@ enum Ents(description: String, snippet: String):
   case Super
       extends Ents(
         "Super is referencing the super class of the current class.",
-        """|trait A
+        """|trait A:
+           |  def a() = 1
            |class Foo extends A:
-           |  val a = <<super>>
+           |  val b = <<super>>.a()
            |""".stripMargin
       )
 
