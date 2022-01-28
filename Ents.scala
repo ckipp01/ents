@@ -60,6 +60,18 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
+  // TODO figure this one out.
+  // case Annotated
+  //    extends Ents(
+  //      """|Used when an @annotation is used.
+  //         |""".stripMargin,
+  //      """|import scala.annotation.nowarn
+  //         |
+  //         |<<@nowarn>>
+  //         |class Foo
+  //         |""".stripMargin
+  //    )
+
   case Assign
       extends Ents(
         """|If you have a mutable variable and then you assign a value to that
@@ -138,6 +150,14 @@ enum Ents(description: String, snippet: String):
   //         |""".stripMargin
   //    )
 
+  case DefDef
+      extends Ents(
+        """|Used when see a method being defined DefDef is used.
+           |""".stripMargin,
+        """|<<def foo() = "foo">>
+           |""".stripMargin
+      )
+
   case Ident
       extends Ents(
         """|Ident is a type of RefTree and RefTrees are used to references
@@ -155,6 +175,14 @@ enum Ents(description: String, snippet: String):
            |be complex), the thenp and also the elsep.
            |""".stripMargin,
         """|val foo = <<if (true) 1 else 0>>
+           |""".stripMargin
+      )
+
+  case Import
+      extends Ents(
+        """|Represents an import statement.
+           |""".stripMargin,
+        """|<<import java.time.Instant>>
            |""".stripMargin
       )
 
@@ -225,6 +253,17 @@ enum Ents(description: String, snippet: String):
   //          |""".stripMargin
   //    )
 
+  // TODO this one doesn't return what I thought it would, is the PackageDef
+  // already just gone? Try this with an untyped Tree.
+  case PackageDef
+      extends Ents(
+        """|Defines a package which has classes inside.
+           |""".stripMargin,
+        """|package <<foo>>
+           |class Foo
+           |""".stripMargin
+      )
+
   case Return
       extends Ents(
         """|The Return tree signifies that are you finishing execution of a method.
@@ -286,6 +325,27 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
+  case Template
+      extends Ents(
+        """|A Template is used to define the body of a class.
+           |
+           |The constr refers to the constructor of the class. For example in:
+           |
+           |class Foo(a: Int) {
+           |  val s = 1
+           |}
+           |
+           |The constr DefDef will be refering to a.
+           |
+           |NOTE: That the self here in this tree is referring to the self
+           |type, but later on this may not be there anymore so the reliable
+           |way to get this is through types.
+           |""".stripMargin,
+        """|class Foo(a: Int):<<
+           |  val foo = 1>>
+           |""".stripMargin
+      )
+
   case This
       extends Ents(
         "This is referencing the current class.",
@@ -308,6 +368,19 @@ enum Ents(description: String, snippet: String):
            |    case _: Throwable => println("something went wrong")
            |  finally
            |    println("you did it!")>>
+           |""".stripMargin
+      )
+
+  case TypeDef
+      extends Ents(
+        """|Used when you are defining a type. This type can either be a clases
+           |or a local type.
+           |
+           |The way to tell if this is a class or a type is to look a at the rhs.
+           |For classes it will be a template. However a bettery way to do this is
+           |to look at the tpe.
+           |""".stripMargin,
+        """|<<type A = Int>>
            |""".stripMargin
       )
 
@@ -339,29 +412,15 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
-  // TODO actually do the snippet here
-  case TypeTree
+  case ValDef
       extends Ents(
-        """|A TypeTree is used to represent a type.
+        """|Used when you see a val definition (a field or local variable).
            |
-           |There are various types of these such as:
-           |  - SingletonTypeTree
-           |  - AndTypeTree (Int && Double)
-           |  - OrTypeTree
-           |  - RefinedTypeTree
-           |  - AppliedTypeTree
-           |  - PolyTypeTree
-           |  - ByNameTypeTree
-           |  - TypeBoundsTree
+           |The preRhs has a LazyTree where Dotty can postpone computation of.
            |""".stripMargin,
-        """|class Foo:
-           |  def plus[A](a: A) = ()
-           |
-           |val foo = new Foo
-           |val added = <<foo.plus(1)>>
+        """|<<val foo = "foo">>
            |""".stripMargin
       )
-
   // ///////////////////////////////////
   // Utilities to deal with the trees
   // ///////////////////////////////////
@@ -402,8 +461,9 @@ enum Ents(description: String, snippet: String):
         pprint.pprintln(tree)
       case None =>
         println(
-          "Looks like pathTo didn't return a tree. Did you forget your <<>>?"
+          "Looks like pathTo didn't return a tree. Just printing out all the trees."
         )
+        pprint.log(trees)
 
   end showTpdTree
 

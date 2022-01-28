@@ -23,41 +23,62 @@ see. You'll then get a brief description, a code sample, and a tree that most
 closely encloses the `<<>>` markers.
 
 ```
-❯ scala-cli run .
+❯ scli run .
 Choose the type of tree you'd like to see:
 [0] Apply
 [1] Assign
 [2] Block
 [3] CaseDef
-[4] Ident
-[5] If
-[6] Match
-[7] NamedArg
-[8] New
-[9] Literal
-[10] Return
-[11] Select
-[12] Super
-[13] This
-[14] Try
-[15] Typed
-[16] TypeApply
-> 7
-NamedArgs are used when using a by name argument.
+[4] DefDef
+[5] Ident
+[6] If
+[7] Import
+[8] Match
+[9] NamedArg
+[10] New
+[11] Literal
+[12] PackageDef
+[13] Return
+[14] Select
+[15] SeqLiteral
+[16] Super
+[17] Template
+[18] This
+[19] Try
+[20] TypeDef
+[21] Typed
+[22] TypeApply
+[23] ValDef
+> 8
+A Match tree represents the entire match expression including all
+of the cases.
 
-NOTE: Keep in mind that in untyped trees the order is
-as written. However, when that tree becomes typed, it
-will be changed to be in the correct order. You will
-however still be able to see it was passed in by name.
+The selector is what you are matching on and the cases are the
+actual cases you are matching on.
 
 """
 Code example:
 
-case class Foo(a: Int, b: Int)
-val foo = Foo(<<b>> = 2, a = 1)
+def foo(a: Int) = <<a match
+  case 1 => "you got a one!"
+  case _ => "you didn't get a one!">>
 
 """
-NamedArg(name = b, arg = Literal(const = ( = 2)))
+Match(
+  selector = Ident(name = a),
+  cases = List(
+    CaseDef(
+      pat = Literal(const = ( = 1)),
+      guard = Thicket(trees = List()),
+      body = Block(stats = List(), expr = Literal(const = ( = "you got a one!")))
+    ),
+    CaseDef(
+      pat = Ident(name = _),
+      guard = Thicket(trees = List()),
+      body = Block(stats = List(), expr = Literal(const = ( = "you didn't get a one!")))
+    )
+  )
+)
 ```
 
 <sub>_The image is "Treebeard and the Ents" by Timothy Ide_</sub>
