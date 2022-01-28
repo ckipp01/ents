@@ -1,7 +1,7 @@
-// using scala 3.1.1
-// using lib com.lihaoyi::pprint:0.7.1
-// using lib io.get-coursier:interface:1.0.6
-// using lib org.scala-lang::scala3-compiler:3.1.0
+//> using scala "3.1.1"
+//> using lib "com.lihaoyi::pprint:0.7.1"
+//> using lib "io.get-coursier:interface:1.0.6"
+//> using lib "org.scala-lang::scala3-compiler:3.1.0"
 
 import scala.io.StdIn
 import scala.util.Failure
