@@ -24,9 +24,21 @@ import scala.jdk.CollectionConverters.*
 
 enum Ents(description: String, snippet: String):
 
-  // ////////////////////
+  // /////////////////////
   // Types of Treees
-  // ////////////////////
+  // /////////////////////
+
+  // TODO figure this one out. I was under the assumption this would be an AndTypeTree
+  // but this is actually an AppliedTypeTree
+  // case AndTypeTree
+  //     extends Ents(
+  //       """|A TypeTree that is representing an and Type which is an
+  //          |"intersection" of the required types.
+  //          |""".stripMargin,
+  //       """|def foo(a: <<Int & String>>) = ()
+  //          |""".stripMargin
+  //     )
+
   case Apply
       extends Ents(
         """|When calling a method on a class you still have a Select, but
@@ -146,6 +158,17 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
+  // TODO I need to figure out how to do this one
+  // for example in the snippet now is just a ValDef
+  // https://docs.scala-lang.org/sips/inline-meta.html
+  // case Inlined
+  //    extends Ents(
+  //      """|The result of inlining a call.
+  //         |""".stripMargin,
+  //      """|<<inline val x = 4>>
+  //         |""".stripMargin
+  //    )
+
   case Match
       extends Ents(
         """|A Match tree represents the entire match expression including all
@@ -191,6 +214,17 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
+  // TODO figure this one out. I was under the assumption this would be an OrTypeTree
+  // but this is actually an AppliedTypeTree
+  // case OrTypeTree
+  //    extends Ents(
+  //      """|A TypeTree that is representing an or type which is an
+  //          |"union" of the required types.
+  //          |""".stripMargin,
+  //      """|def foo(a: <<Int | String>>) = ()
+  //          |""".stripMargin
+  //    )
+
   case Return
       extends Ents(
         """|The Return tree signifies that are you finishing execution of a method.
@@ -223,6 +257,22 @@ enum Ents(description: String, snippet: String):
         """|case class Foo(a: Int)
            |val foo = Foo(3)
            |val num = foo.<<a>>
+           |""".stripMargin
+      )
+
+  case SeqLiteral
+      extends Ents(
+        """|When you have a var arg there needs to be a way at the call site to
+           |know that each arg |is actually pointing to the same arg in the method.
+           |In this case a SeqLiteral will be used.
+           |
+           |At some point in the pipeline you will also see this as a
+           |JavaSeqLiteral. The difference is the runtime representation. In
+           |Scala they are Scala collections while in Java they are the
+           |underlying JVM arrays.
+           |""".stripMargin,
+        """|def foo(a: Int*): Unit = ()
+           |val value = foo(<<1, 2, 3>>)
            |""".stripMargin
       )
 
@@ -289,6 +339,29 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
+  // TODO actually do the snippet here
+  case TypeTree
+      extends Ents(
+        """|A TypeTree is used to represent a type.
+           |
+           |There are various types of these such as:
+           |  - SingletonTypeTree
+           |  - AndTypeTree (Int && Double)
+           |  - OrTypeTree
+           |  - RefinedTypeTree
+           |  - AppliedTypeTree
+           |  - PolyTypeTree
+           |  - ByNameTypeTree
+           |  - TypeBoundsTree
+           |""".stripMargin,
+        """|class Foo:
+           |  def plus[A](a: A) = ()
+           |
+           |val foo = new Foo
+           |val added = <<foo.plus(1)>>
+           |""".stripMargin
+      )
+
   // ///////////////////////////////////
   // Utilities to deal with the trees
   // ///////////////////////////////////
@@ -318,13 +391,20 @@ enum Ents(description: String, snippet: String):
     )
     val trees = driver.openedTrees(uri)
     val path = Interactive.pathTo(trees, pos)(using driver.currentCtx)
-    val tree = path.head
+    val headTree = path.headOption
     pprint.pprintln(s"""|
                         |Code example:
                         |
                         |$snippet
                         |""".stripMargin)
-    pprint.pprintln(tree)
+    headTree match
+      case Some(tree) =>
+        pprint.pprintln(tree)
+      case None =>
+        println(
+          "Looks like pathTo didn't return a tree. Did you forget your <<>>?"
+        )
+
   end showTpdTree
 
   private val filename = s"${this.toString}.scala"
