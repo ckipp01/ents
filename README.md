@@ -23,7 +23,7 @@ see. You'll then get a brief description, a code sample, and a tree that most
 closely encloses the `<<>>` markers.
 
 ```
-❯ scli run .
+❯ scala-cli run .
 Choose the type of tree you'd like to see:
 [0] Apply
 [1] Assign
@@ -50,20 +50,22 @@ Choose the type of tree you'd like to see:
 [22] TypeApply
 [23] ValDef
 > 8
+Description:
 A Match tree represents the entire match expression including all
 of the cases.
 
 The selector is what you are matching on and the cases are the
 actual cases you are matching on.
 
-"""
 Code example:
-
 def foo(a: Int) = <<a match
   case 1 => "you got a one!"
   case _ => "you didn't get a one!">>
 
-"""
+Minimal Tree:
+Match(Ident(a),List(CaseDef(Literal(Constant(1)),EmptyTree,Block(List(),Literal(Constant(you got a one!)))), CaseDef(Ident(_),EmptyTree,Block(List(),Literal(Constant(you didn't get a one!))))))
+
+Verbose Tree:
 Match(
   selector = Ident(name = a),
   cases = List(
