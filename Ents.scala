@@ -12,6 +12,8 @@ import dotty.tools.dotc.util.SourcePosition
 import dotty.tools.dotc.util.Spans
 
 import scala.jdk.CollectionConverters.*
+import dotty.tools.dotc.printing.SyntaxHighlighting
+import dotty.tools.dotc.core.Contexts.Context
 
 ///////////////////////////////////////////////////////////////////////////////
 // NOTE: Most of this information came right from a lecture that Dmitry
@@ -421,12 +423,17 @@ enum Ents(description: String, snippet: String):
         """|<<val foo = "foo">>
            |""".stripMargin
       )
-  // ///////////////////////////////////
-  // Utilities to deal with the trees
-  // ///////////////////////////////////
 
-  def showDescription() =
-    println(description)
+  //////////////////////////////////////
+  // Utilities to deal with the trees
+  //////////////////////////////////////
+
+  def descriptionBuilder(): StringBuilder =
+    val sb = new StringBuilder
+    sb ++= "Description:"
+    sb ++= System.lineSeparator
+    sb ++= description
+    sb ++= System.lineSeparator
 
   // TODO I added this in to check something and then realized this would be a
   // great addition to be able to show a snippet as an untyped tree and also a
@@ -439,7 +446,9 @@ enum Ents(description: String, snippet: String):
     val tree = parser.parse()
     pprint.log(tree)
 
-  def showTpdTree() =
+  def showTpdTree(): Unit =
+    val sb = descriptionBuilder()
+    given Context = driver.currentCtx
     val (pos, code) = extractPos()
     val diagnostics = driver.run(uri, pos.source)
     assert(
@@ -448,23 +457,37 @@ enum Ents(description: String, snippet: String):
           |
           |${diagnostics.mkString("\n")}""".stripMargin
     )
+
     val trees = driver.openedTrees(uri)
-    val path = Interactive.pathTo(trees, pos)(using driver.currentCtx)
+    val path = Interactive.pathTo(trees, pos)
     val headTree = path.headOption
-    pprint.pprintln(s"""|
-                        |Code example:
-                        |
-                        |$snippet
-                        |""".stripMargin)
+
+    val highlighted = SyntaxHighlighting.highlight(snippet)
+
+    sb ++= "Code example:"
+    sb ++= System.lineSeparator
+    sb ++= highlighted
+    sb ++= System.lineSeparator
+
     headTree match
       case Some(tree) =>
-        pprint.pprintln(tree)
+        sb ++= "Minimal Tree:"
+        sb ++= System.lineSeparator
+        sb ++= tree.toString
+        sb ++= System.lineSeparator
+        sb ++= System.lineSeparator
+        sb ++= "Verbose Tree:"
+        sb ++= System.lineSeparator
+        sb ++= pprint.tokenize(tree).mkString
+        sb ++= System.lineSeparator
       case None =>
-        println(
-          "Looks like pathTo didn't return a tree. Just printing out all the trees."
-        )
-        pprint.log(trees)
+        sb ++= "Looks like pathTo didn't return a tree. Just printing out all the trees."
+        sb ++= System.lineSeparator
+        sb ++= trees.toString
+        sb ++= System.lineSeparator
+    end match
 
+    println(sb)
   end showTpdTree
 
   private val filename = s"${this.toString}.scala"
@@ -485,7 +508,6 @@ enum Ents(description: String, snippet: String):
 
     new InteractiveDriver(
       List(
-        "-color:never",
         "-classpath",
         extraLibraries.mkString(File.pathSeparator)
       )
