@@ -11,7 +11,8 @@ import scala.util.Try
 
 @main def run(args: String*): Unit =
   args match
-    case Seq() =>
+    case Seq("help") | Seq("--h") | Seq("-h") | Seq("--help") => help()
+    case args =>
       val choice = choose()
       choice match
         case Success(ordinal) if ordinal >= Ents.values.size =>
@@ -20,13 +21,18 @@ import scala.util.Try
           )
         case Success(ordinal) =>
           val tree = Ents.fromOrdinal(ordinal)
-          tree.showTpdTree()
+          // TODO don't advertise this yet since it's currently just printing
+          // out the entire untyped tree. Figure out a way to get the tree at
+          // the position for untyped before putting this out there.
+          if args.contains("--untpd") || args.contains("--untyped") then
+            tree.showUntypedTree()
+          else tree.showTpdTree()
+
         case Failure(_) =>
           println(
             "Please choose a number that corresponds to the type of tree you want to see"
           )
-
-    case Seq("help") | Seq("--h") | Seq("-h") | Seq("--help") => help()
+      end match
 
 private def choose() =
   val choices = Ents.values

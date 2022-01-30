@@ -117,21 +117,30 @@ enum Ents(description: String, snippet: String):
       )
 
   // TODO I need to figure out the best way to show this because right now this
-  // is showing a DefDef, not a Closure where I want it. I honestly just don't
-  // know if maybe at this point where I'm looking at the trees the Closure no
-  // longer exists and it's just a DefDef since it's been lifted?
+  // is showing a DefDef, not a Closure where I want it. But that also makese
+  // sense a bit. You can see with with -Xprint:all
   //
-  // Even when just using the parser the args here aren't a Closure
-  //        args = List(
-  //        Function(
-  //          args = List(ValDef(name = x, tpt = TypeTree, preRhs = Thicket(trees = List()))),
-  //          body = InfixOp(
-  //            left = Ident(name = x),
-  //            op = Ident(name = *),
-  //            right = Number(digits = "2", kind = Whole(radix = 10))
-  //          )
-  //        )
+  // ❯ scala3-compiler -Xprint:all test.scala
+  // [[syntax trees at end of                    parser]] // test.scala
+  // package <empty> {
+  //  val foo = List(1).map(x => x * 2)
+  // }
+  //
+  // [[syntax trees at end of                     typer]] // test.scala
+  // package <empty> {
+  //  final lazy module val test$package: test$package = new test$package()
+  //  final module class test$package() extends Object() {
+  //    this: test$package.type =>
+  //    val foo: List[Int] =
+  //      List.apply[Int]([1 : Int]*).map[Int](
+  //        {
+  //          def $anonfun(x: Int): Int = x.*(2)
+  //          closure($anonfun)
+  //        }
   //      )
+  //  }
+  // }
+  // So the tree we are looking at here is actually just the `DefDef` of $anonfun
   // case Closure
   //    extends Ents(
   //      """|A Closure is a tree that more or less defineds a lambda.
@@ -345,6 +354,30 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin,
         """|class Foo(a: Int):<<
            |  val foo = 1>>
+           |""".stripMargin
+      )
+
+  case Thicket
+      extends Ents(
+        """|This is a helper tree that allows you to return multiple trees in a
+           |location where you'd expect to return a singular one.
+           |
+           |This is often used in transform methods where you want to transform
+           |a method and maybe you'll return two methods. However, if it's in a
+           |place that expects a single tree you can then return a Thicket of
+           |those two trees.
+           |
+           |It also often seems to be used when you have an empty tree. For
+           |example in the example below we have two CaseDefs. The first one has
+           |a guard and the second one doesn't. When you look at the CaseDef
+           |trees you'll see the guard for the first one is an Apply, but the
+           |guard for the second one is empty and noted by a
+           |Thicket(trees = List()).
+           |
+           |""".stripMargin,
+        """|def foo(a: Int) = a match
+           |  <<case num if num > 0 => "you something positive!"
+           |  case _ => "negative!">>
            |""".stripMargin
       )
 
