@@ -30,16 +30,19 @@ enum Ents(description: String, snippet: String):
   // Types of Treees
   // /////////////////////
 
-  // TODO figure this one out. I was under the assumption this would be an AndTypeTree
-  // but this is actually an AppliedTypeTree
-  // case AndTypeTree
-  //     extends Ents(
-  //       """|A TypeTree that is representing an and Type which is an
-  //          |"intersection" of the required types.
-  //          |""".stripMargin,
-  //       """|def foo(a: <<Int & String>>) = ()
-  //          |""".stripMargin
-  //     )
+  case AppliedTypeTree
+      extends Ents(
+        """|An AppliedTypeTree is used when you have a type that is being
+          |applied and not just an Ident.
+          |
+          |These end up being nested with more complex signatures. Take the
+          |below |example, the List[List[Int]] will have the tpt as an Ident of
+          |List, but the args |will also be another AppliedTypeTree of another
+          |List.
+          |""".stripMargin,
+        """|def foo(a: <<List[List[Int]]>>) = ()
+          |""".stripMargin
+      )
 
   case Apply
       extends Ents(
@@ -62,17 +65,20 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
-  // TODO figure this one out.
-  // case Annotated
-  //    extends Ents(
-  //      """|Used when an @annotation is used.
-  //         |""".stripMargin,
-  //      """|import scala.annotation.nowarn
-  //         |
-  //         |<<@nowarn>>
-  //         |class Foo
-  //         |""".stripMargin
-  //    )
+  // TODO I thought the parser would show this...
+  case Annotated
+      extends Ents(
+        """|Used when an @annotation is used.
+           |
+           |NOTE: That after typechecking annotations are moved to the
+           |`denot.annotations`, so look at this with --untyped.
+           |""".stripMargin,
+        """|import scala.annotation.nowarn
+           |
+           |<<@nowarn>>
+           |class Foo
+           |""".stripMargin
+      )
 
   case Assign
       extends Ents(
