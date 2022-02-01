@@ -33,13 +33,13 @@ enum Ents(description: String, snippet: String):
   case AppliedTypeTree
       extends Ents(
         """|An AppliedTypeTree is used when you have a type that is being
-          |applied and not just an Ident.
-          |
-          |These end up being nested with more complex signatures. Take the
-          |below |example, the List[List[Int]] will have the tpt as an Ident of
-          |List, but the args |will also be another AppliedTypeTree of another
-          |List.
-          |""".stripMargin,
+           |applied and not just an Ident.
+           |
+           |These end up being nested with more complex signatures. Take the
+           |below |example, the List[List[Int]] will have the tpt as an Ident of
+           |List, but the args |will also be another AppliedTypeTree of another
+           |List.
+           |""".stripMargin,
         """|def foo(a: <<List[List[Int]]>>) = ()
           |""".stripMargin
       )
@@ -185,8 +185,9 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
-  // TODO I need to figure out how to do this one
-  // for example in the snippet now is just a ValDef
+  // TODO I need to figure out how to do this one for example in the snippet
+  // now is just a ValDef and I'm assuming that the actual Inlined is in the
+  // tpt, so I need to figure out how to show this.
   // https://docs.scala-lang.org/sips/inline-meta.html
   // case Inlined
   //    extends Ents(
@@ -323,6 +324,16 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
+  case SingletonTypeTree
+      extends Ents(
+        """|Used in a singleton type of ref.type.
+           |""".stripMargin,
+        """|val foo: String = "foo"
+           |type fooString = <<foo.type>>
+           |
+           |""".stripMargin
+      )
+
   case Super
       extends Ents(
         "Super is referencing the super class of the current class.",
@@ -451,6 +462,18 @@ enum Ents(description: String, snippet: String):
            |The preRhs has a LazyTree where Dotty can postpone computation of.
            |""".stripMargin,
         """|<<val foo = "foo">>
+           |""".stripMargin
+      )
+
+  case WhileDo
+      extends Ents(
+        """|Used in a while loop.
+           |
+           |while (cond) { body }
+           |""".stripMargin,
+        """|object Foo:
+           |  var foo = 0
+           |  <<while foo < 3 do foo +=1>>
            |""".stripMargin
       )
 
