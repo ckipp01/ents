@@ -68,7 +68,9 @@ enum Ents(description: String, snippet: String):
   // TODO I thought the parser would show this...
   case Annotated
       extends Ents(
-        """|Used when an @annotation is used.
+        """|WARNING: The output of this isn't what I expect yet.
+           |
+           |Used when an @annotation is used.
            |
            |NOTE: That after typechecking annotations are moved to the
            |`denot.annotations`, so look at this with --untyped.
@@ -122,50 +124,30 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
-  // TODO I need to figure out the best way to show this because right now this
-  // is showing a DefDef, not a Closure where I want it. But that also makese
-  // sense a bit. You can see with with -Xprint:all
-  //
-  // ❯ scala3-compiler -Xprint:all test.scala
-  // [[syntax trees at end of                    parser]] // test.scala
-  // package <empty> {
-  //  val foo = List(1).map(x => x * 2)
-  // }
-  //
-  // [[syntax trees at end of                     typer]] // test.scala
-  // package <empty> {
-  //  final lazy module val test$package: test$package = new test$package()
-  //  final module class test$package() extends Object() {
-  //    this: test$package.type =>
-  //    val foo: List[Int] =
-  //      List.apply[Int]([1 : Int]*).map[Int](
-  //        {
-  //          def $anonfun(x: Int): Int = x.*(2)
-  //          closure($anonfun)
-  //        }
-  //      )
-  //  }
-  // }
-  // So the tree we are looking at here is actually just the `DefDef` of $anonfun
-  // case Closure
-  //    extends Ents(
-  //      """|A Closure is a tree that more or less defineds a lambda.
-  //         |
-  //         |The meth part of this tree is referring to the method that will be
-  //         |silintly created to define the closure.
-  //         |For example, take the following:
-  //         |List(1).map(x => x * 2)
-  //         |
-  //         |The x * 2 will actually be extracted into:
-  //         |def annon$(x) = x * 2
-  //         |List(1).map(annon$)
-  //         |
-  //         |The tpt tells you what type of Single Abstract Method type that it
-  //         |implements.
-  //         |""".stripMargin,
-  //      """|val foo = List(1).map(<<x => x * 2>>)
-  //         |""".stripMargin
-  //    )
+  case Closure
+      extends Ents(
+        """|A Closure is a tree that more or less defines a lambda.
+           |
+           |The meth part of this tree is referring to the method that will be
+           |silintly created to define the closure.
+           |For example, take the following:
+           |List(1).map(x => x * 2)
+           |
+           |The x * 2 will actually be extracted into:
+           |def annon$(x) = x * 2
+           |List(1).map(annon$)
+           |
+           |The tpt tells you what type of Single Abstract Method type that it
+           |implements.
+           |
+           |Also note that the <<>> is not just around the closure where you'd
+           |think it should be because if we do that, you would only actually
+           |see the DefDef for the $anonfun. The Closure will actually be in the
+           |expr of the Apply args.
+           |""".stripMargin,
+        """|val foo = List(1).<<map(x => x * 2)>>
+           |""".stripMargin
+      )
 
   case DefDef
       extends Ents(
@@ -259,24 +241,33 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
-  // TODO figure this one out. I was under the assumption this would be an OrTypeTree
-  // but this is actually an AppliedTypeTree
-  // case OrTypeTree
-  //    extends Ents(
-  //      """|A TypeTree that is representing an or type which is an
-  //          |"union" of the required types.
-  //          |""".stripMargin,
-  //      """|def foo(a: <<Int | String>>) = ()
-  //          |""".stripMargin
-  //    )
-
   // TODO this one doesn't return what I thought it would, is the PackageDef
   // already just gone? Try this with an untyped Tree.
   case PackageDef
       extends Ents(
-        """|Defines a package which has classes inside.
+        """|WARNING: This tree isn't fully correct yet.
+           |
+           |Defines a package which has classes inside.
+           |
+           |So when running the code snippet with -Vprint:all -Yplain-printer I see:
+           |[[syntax trees at end of              constructors]] // package.scala
+           |PackageDef(Ident(foo), List(
+           |  TypeDef(Foo,
+           |    Template(
+           |      DefDef(<init>, List(List()), TypeTree(),
+           |        Block(List(
+           |          Apply(Select(Super(This(Ident(Foo)), Ident()), <init>), List())
+           |        ), Literal(()))
+           |      )
+           |    , List(TypeTree()), ValDef(_, Thicket(List()), Thicket(List())), List())
+           |  )
+           |))
+           |
+           |However looking at the opened trees for this I just see
+           |SourceTree... need to figure this out.
            |""".stripMargin,
-        """|package <<foo>>
+        """|<<package foo>>
+           |
            |class Foo
            |""".stripMargin
       )
@@ -522,7 +513,7 @@ enum Ents(description: String, snippet: String):
       case None =>
         sb ++= "Looks like pathTo didn't return a tree. Just printing out all the trees."
         sb ++= System.lineSeparator
-        sb ++= trees.toString
+        sb ++= pprint.tokenize(trees).mkString
         sb ++= System.lineSeparator
     end match
 
