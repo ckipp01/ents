@@ -14,6 +14,7 @@ import dotty.tools.dotc.util.Spans
 import scala.jdk.CollectionConverters.*
 import dotty.tools.dotc.printing.SyntaxHighlighting
 import dotty.tools.dotc.core.Contexts.Context
+import scala.annotation.transparentTrait
 
 ///////////////////////////////////////////////////////////////////////////////
 // NOTE: Most of this information came right from a lecture that Dmitry
@@ -110,6 +111,17 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin
       )
 
+  case ByNameTypeTree
+      extends Ents(
+        """|When you have a TypeDef with a match type the body of the TypeDef
+           |will be using a MatchTypeTree.
+           |""".stripMargin,
+        """|type Elem[X] = <|X match
+           |  case String => Char
+           |  case Iterable[t] => t|>
+           |""".stripMargin
+      )
+
   case CaseDef
       extends Ents(
         """|A CaseDef are the actual cases inside of a Match tree.
@@ -197,6 +209,23 @@ enum Ents(description: String, snippet: String):
   //         |""".stripMargin
   //    )
 
+  case LambdaTypeTree
+      extends Ents(
+        """|When you have TypeDef where the rhs is a type lambda the
+           |LambdaTypeTree is used.
+           |""".stripMargin,
+        """|type foo = <|[X] =>> List[X]|>
+           |""".stripMargin
+      )
+
+  case Literal
+      extends Ents(
+        """|Literal is a constant. For example just 1 or "hi"".
+           |""".stripMargin,
+        """|val foo = <|1|>
+           |""".stripMargin
+      )
+
   case Match
       extends Ents(
         """|A Match tree represents the entire match expression including all
@@ -208,6 +237,17 @@ enum Ents(description: String, snippet: String):
         """|def foo(a: Int) = <|a match
            |  case 1 => "you got a one!"
            |  case _ => "you didn't get a one!"|>
+           |""".stripMargin
+      )
+
+  case MatchTypeTree
+      extends Ents(
+        """|When you have a TypeDef with a match type the body of the TypeDef
+           |will be using a MatchTypeTree.
+           |""".stripMargin,
+        """|type Elem[X] = <|X match
+           |  case String => Char
+           |  case Iterable[t] => t|>
            |""".stripMargin
       )
 
@@ -231,23 +271,6 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin,
         """|class Foo
            |val foo = <|new|> Foo
-           |""".stripMargin
-      )
-
-  case LambdaTypeTree
-      extends Ents(
-        """|When you have TypeDef where the rhs is a type lambda the
-           |LambdaTypeTree is used.
-           |""".stripMargin,
-        """|type foo = <|[X] =>> List[X]|>
-           |""".stripMargin
-      )
-
-  case Literal
-      extends Ents(
-        """|Literal is a constant. For example just 1 or "hi"".
-           |""".stripMargin,
-        """|val foo = <|1|>
            |""".stripMargin
       )
 
