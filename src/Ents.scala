@@ -26,9 +26,9 @@ import dotty.tools.dotc.core.Contexts.Context
 
 enum Ents(description: String, snippet: String):
 
-  // /////////////////////
+  ////////////////////////
   // Types of Treees
-  // /////////////////////
+  ////////////////////////
 
   case AppliedTypeTree
       extends Ents(
@@ -40,7 +40,7 @@ enum Ents(description: String, snippet: String):
            |List, but the args |will also be another AppliedTypeTree of another
            |List.
            |""".stripMargin,
-        """|def foo(a: <<List[List[Int]]>>) = ()
+        """|def foo(a: <|List[List[Int]]|>) = ()
           |""".stripMargin
       )
 
@@ -61,7 +61,7 @@ enum Ents(description: String, snippet: String):
            |  def plus(a: Int)(b: Int) = a + b
            |
            |val foo = new Foo
-           |val added = foo.<<plus(1)(2)>>
+           |val added = foo.<|plus(1)(2)|>
            |""".stripMargin
       )
 
@@ -77,7 +77,7 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin,
         """|import scala.annotation.nowarn
            |
-           |<<@nowarn>>
+           |<|@nowarn|>
            |class Foo
            |""".stripMargin
       )
@@ -89,7 +89,7 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin,
         """|class Foo:
            |  var foo = 0
-           |  def update(a: Int) = <<foo = a>>
+           |  def update(a: Int) = <|foo = a|>
            |""".stripMargin
       )
 
@@ -103,10 +103,10 @@ enum Ents(description: String, snippet: String):
            |So in the example, there is a single statement and then the
            |expression.
            |""".stripMargin,
-        """|val foo = <<{
+        """|val foo = <|{
            |  val a = 1
            |  a + 1
-           |}>>
+           |}|>
            |""".stripMargin
       )
 
@@ -119,7 +119,7 @@ enum Ents(description: String, snippet: String):
            |The body is what is to executed when you enter that case.
            |""".stripMargin,
         """|def foo(a: Int) = a match
-           |  <<case 1 => "you got a one!">>
+           |  <|case 1 => "you got a one!"|>
            |  case _ => "you didn't get a one!"
            |""".stripMargin
       )
@@ -140,12 +140,12 @@ enum Ents(description: String, snippet: String):
            |The tpt tells you what type of Single Abstract Method type that it
            |implements.
            |
-           |Also note that the <<>> is not just around the closure where you'd
+           |Also note that the <||> is not just around the closure where you'd
            |think it should be because if we do that, you would only actually
            |see the DefDef for the $anonfun. The Closure will actually be in the
            |expr of the Apply args.
            |""".stripMargin,
-        """|val foo = List(1).<<map(x => x * 2)>>
+        """|val foo = List(1).<|map(x => x * 2)|>
            |""".stripMargin
       )
 
@@ -153,7 +153,7 @@ enum Ents(description: String, snippet: String):
       extends Ents(
         """|Used when see a method being defined DefDef is used.
            |""".stripMargin,
-        """|<<def foo() = "foo">>
+        """|<|def foo() = "foo"|>
            |""".stripMargin
       )
 
@@ -164,7 +164,7 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin,
         """|case class Foo(a: Int)
            |val foo = Foo(3)
-           |val num = <<foo>>.a
+           |val num = <|foo|>.a
            |""".stripMargin
       )
 
@@ -173,7 +173,7 @@ enum Ents(description: String, snippet: String):
         """|Represents an if expression including the full condition (that can
            |be complex), the thenp and also the elsep.
            |""".stripMargin,
-        """|val foo = <<if (true) 1 else 0>>
+        """|val foo = <|if (true) 1 else 0|>
            |""".stripMargin
       )
 
@@ -181,7 +181,7 @@ enum Ents(description: String, snippet: String):
       extends Ents(
         """|Represents an import statement.
            |""".stripMargin,
-        """|<<import java.time.Instant>>
+        """|<|import java.time.Instant|>
            |""".stripMargin
       )
 
@@ -193,7 +193,7 @@ enum Ents(description: String, snippet: String):
   //    extends Ents(
   //      """|The result of inlining a call.
   //         |""".stripMargin,
-  //      """|<<inline val x = 4>>
+  //      """|<|inline val x = 4|>
   //         |""".stripMargin
   //    )
 
@@ -205,9 +205,9 @@ enum Ents(description: String, snippet: String):
            |The selector is what you are matching on and the cases are the
            |actual cases you are matching on.
            |""".stripMargin,
-        """|def foo(a: Int) = <<a match
+        """|def foo(a: Int) = <|a match
            |  case 1 => "you got a one!"
-           |  case _ => "you didn't get a one!">>
+           |  case _ => "you didn't get a one!"|>
            |""".stripMargin
       )
 
@@ -221,7 +221,7 @@ enum Ents(description: String, snippet: String):
            |however still be able to see it was passed in by name.
            |""".stripMargin,
         """|case class Foo(a: Int, b: Int)
-           |val foo = Foo(<<b>> = 2, a = 1)
+           |val foo = Foo(<|b|> = 2, a = 1)
            |""".stripMargin
       )
 
@@ -230,7 +230,16 @@ enum Ents(description: String, snippet: String):
         """|New refers to a type in which you are constructing.
            |""".stripMargin,
         """|class Foo
-           |val foo = <<new>> Foo
+           |val foo = <|new|> Foo
+           |""".stripMargin
+      )
+
+  case LambdaTypeTree
+      extends Ents(
+        """|When you have TypeDef where the rhs is a type lambda the
+           |LambdaTypeTree is used.
+           |""".stripMargin,
+        """|type foo = <|[X] =>> List[X]|>
            |""".stripMargin
       )
 
@@ -238,7 +247,7 @@ enum Ents(description: String, snippet: String):
       extends Ents(
         """|Literal is a constant. For example just 1 or "hi"".
            |""".stripMargin,
-        """|val foo = <<1>>
+        """|val foo = <|1|>
            |""".stripMargin
       )
 
@@ -267,7 +276,7 @@ enum Ents(description: String, snippet: String):
            |However looking at the opened trees for this I just see
            |SourceTree... need to figure this out.
            |""".stripMargin,
-        """|<<package foo>>
+        """|<|package foo|>
            |
            |class Foo
            |""".stripMargin
@@ -286,7 +295,7 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin,
         """|def foo(): Int =
            |  val x = 3
-           |  <<return x>>
+           |  <|return x|>
            |""".stripMargin
       )
 
@@ -304,7 +313,7 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin,
         """|case class Foo(a: Int)
            |val foo = Foo(3)
-           |val num = foo.<<a>>
+           |val num = foo.<|a|>
            |""".stripMargin
       )
 
@@ -320,7 +329,7 @@ enum Ents(description: String, snippet: String):
            |underlying JVM arrays.
            |""".stripMargin,
         """|def foo(a: Int*): Unit = ()
-           |val value = foo(<<1, 2, 3>>)
+           |val value = foo(<|1, 2, 3|>)
            |""".stripMargin
       )
 
@@ -329,7 +338,7 @@ enum Ents(description: String, snippet: String):
         """|Used in a singleton type of ref.type.
            |""".stripMargin,
         """|val foo: String = "foo"
-           |type fooString = <<foo.type>>
+           |type fooString = <|foo.type|>
            |
            |""".stripMargin
       )
@@ -340,7 +349,7 @@ enum Ents(description: String, snippet: String):
         """|trait A:
            |  def a() = 1
            |class Foo extends A:
-           |  val b = <<super>>.a()
+           |  val b = <|super|>.a()
            |""".stripMargin
       )
 
@@ -360,8 +369,8 @@ enum Ents(description: String, snippet: String):
            |type, but later on this may not be there anymore so the reliable
            |way to get this is through types.
            |""".stripMargin,
-        """|class Foo(a: Int):<<
-           |  val foo = 1>>
+        """|class Foo(a: Int):<|
+           |  val foo = 1|>
            |""".stripMargin
       )
 
@@ -384,8 +393,8 @@ enum Ents(description: String, snippet: String):
            |
            |""".stripMargin,
         """|def foo(a: Int) = a match
-           |  <<case num if num > 0 => "you something positive!"
-           |  case _ => "negative!">>
+           |  <|case num if num > 0 => "you something positive!"
+           |  case _ => "negative!"|>
            |""".stripMargin
       )
 
@@ -393,7 +402,7 @@ enum Ents(description: String, snippet: String):
       extends Ents(
         "This is referencing the current class.",
         """|class Foo:
-           |  val a = <<this>>
+           |  val a = <|this|>
            |""".stripMargin
       )
 
@@ -405,12 +414,12 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin,
         """|import java.lang.Throwable
            |val foo =
-           |  <<try
+           |  <|try
            |    println("pretend we are reading a file here")
            |  catch
            |    case _: Throwable => println("something went wrong")
            |  finally
-           |    println("you did it!")>>
+           |    println("you did it!")|>
            |""".stripMargin
       )
 
@@ -423,7 +432,7 @@ enum Ents(description: String, snippet: String):
            |For classes it will be a template. However a bettery way to do this is
            |to look at the tpe.
            |""".stripMargin,
-        """|<<type A = Int>>
+        """|<|type A = Int|>
            |""".stripMargin
       )
 
@@ -433,7 +442,7 @@ enum Ents(description: String, snippet: String):
            |example is when you are widening a type like you see in the
            |example where we have an Int but are widening to Any.
            |""".stripMargin,
-        """|val example = <<1: Any>>
+        """|val example = <|1: Any|>
            |""".stripMargin
       )
 
@@ -451,7 +460,7 @@ enum Ents(description: String, snippet: String):
            |  def plus[A](a: A) = ()
            |
            |val foo = new Foo
-           |val added = <<foo.plus(1)>>
+           |val added = <|foo.plus(1)|>
            |""".stripMargin
       )
 
@@ -461,7 +470,7 @@ enum Ents(description: String, snippet: String):
            |
            |The preRhs has a LazyTree where Dotty can postpone computation of.
            |""".stripMargin,
-        """|<<val foo = "foo">>
+        """|<|val foo = "foo"|>
            |""".stripMargin
       )
 
@@ -473,7 +482,7 @@ enum Ents(description: String, snippet: String):
            |""".stripMargin,
         """|object Foo:
            |  var foo = 0
-           |  <<while foo < 3 do foo +=1>>
+           |  <|while foo < 3 do foo +=1|>
            |""".stripMargin
       )
 
@@ -492,7 +501,7 @@ enum Ents(description: String, snippet: String):
   // great addition to be able to show a snippet as an untyped tree and also a
   // typed tree. There aren't helper methods for untyped trees like there are
   // for typed ones so we might have to make a untyped version of things like
-  // pathTo so we can try to show the pos that we are pointing to with <<>>.
+  // pathTo so we can try to show the pos that we are pointing to with <||>.
   def showUntypedTree() =
     val (pos, code) = extractPos()
     val parser = new Parser(pos.source)(using driver.currentCtx)
@@ -568,10 +577,10 @@ enum Ents(description: String, snippet: String):
   end driver
 
   private def extractPos() =
-    val startIndex = snippet.indexOf("<<")
-    val beginningStripped = snippet.replace("<<", "")
-    val endIndex = beginningStripped.indexOf(">>")
-    val cleanCode = beginningStripped.replace(">>", "")
+    val startIndex = snippet.indexOf("<|")
+    val beginningStripped = snippet.replace("<|", "")
+    val endIndex = beginningStripped.indexOf("|>")
+    val cleanCode = beginningStripped.replace("|>", "")
 
     val span =
       if startIndex == endIndex then Spans.Span(startIndex)

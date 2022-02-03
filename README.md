@@ -20,7 +20,7 @@ Ents is a command-line application built with
 [scala-cli](https://scala-cli.virtuslab.org/). To use it, just run `scala-cli
 run .` and follow the instructions by choosing the type of tree you'd like to
 see. You'll then get a brief description, a code sample, and a tree that most
-closely encloses the `<<>>` markers.
+closely encloses the `<| |>` markers.
 
 ```
 ❯ scala-cli run .
@@ -51,9 +51,9 @@ The selector is what you are matching on and the cases are the
 actual cases you are matching on.
 
 Code example:
-def foo(a: Int) = <<a match
+def foo(a: Int) = <|a match
   case 1 => "you got a one!"
-  case _ => "you didn't get a one!">>
+  case _ => "you didn't get a one!"|>
 
 Minimal Tree:
 Match(Ident(a),List(CaseDef(Literal(Constant(1)),EmptyTree,Block(List(),Literal(Constant(you got a one!)))), CaseDef(Ident(_),EmptyTree,Block(List(),Literal(Constant(you didn't get a one!))))))
