@@ -20,7 +20,7 @@ jobs:
           apps: scala-cli scalafmt
 
       - name: Format check
-        run: scalafmt --check *.scala
+        run: scalafmt --check src/ test/
 
       - name: Test
         run: scala-cli test .
