@@ -25,31 +25,24 @@ closely encloses the `<<>>` markers.
 ```
 ❯ scala-cli run .
 Choose the type of tree you'd like to see:
-[0] Apply
-[1] Assign
-[2] Block
-[3] CaseDef
-[4] DefDef
-[5] Ident
-[6] If
-[7] Import
-[8] Match
-[9] NamedArg
-[10] New
-[11] Literal
-[12] PackageDef
-[13] Return
-[14] Select
-[15] SeqLiteral
-[16] Super
-[17] Template
-[18] This
-[19] Try
-[20] TypeDef
-[21] Typed
-[22] TypeApply
-[23] ValDef
-> 8
+[0] AppliedTypeTree
+[1] Apply
+[2] Annotated
+[3] Assign
+[4] Block
+[5] CaseDef
+[6] Closure
+[7] DefDef
+[8] Ident
+[9] If
+[10] Import
+[11] Match
+...
+[26] Typed
+[27] TypeApply
+[28] ValDef
+[29] WhileDo
+> 11
 Description:
 A Match tree represents the entire match expression including all
 of the cases.
