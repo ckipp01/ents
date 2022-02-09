@@ -11,8 +11,7 @@ at just listening and retaining. So this project was a way for me to take some
 notes and demonstrate with code the Trees that are being covered.
 
 As I learn more about Trees I'll continue to add and amend these to hopefully
-give a thorough overview and help someone else understand Trees. This is heavily
-a work in progress at the moment.
+give a thorough overview and help someone else understand Trees.
 
 ## How to run
 
